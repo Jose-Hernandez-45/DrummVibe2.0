@@ -4,12 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePassword = document.getElementById('togglePassword');
   const passwordInput = document.getElementById('contrasena');
 
+  // Mostrar/ocultar contraseña
   togglePassword.addEventListener('click', () => {
     const type = passwordInput.type === 'password' ? 'text' : 'password';
     passwordInput.type = type;
     togglePassword.classList.toggle('fa-eye');
     togglePassword.classList.toggle('fa-eye-slash');
   });
+
+  // Detectar entorno (localhost o producción)
+  const API_URL = location.hostname === 'localhost'
+    ? 'http://localhost:5000'
+    : 'https://drummvibe2-0.onrender.com'; // ← Reemplaza con la URL real de tu backend en Render si es otra
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -24,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/login', {
+      const res = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ usuario, contrasena }),
@@ -45,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       message.textContent = data.message;
       message.style.color = 'green';
 
-      // Redirigir por rol
+      // Redirigir según el rol
       setTimeout(() => {
         if (data.rol === 'administrador') {
           window.location.href = '../templates/adm/admin.html';
