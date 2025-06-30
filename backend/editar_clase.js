@@ -2,6 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('formEditarClase');
   const mensaje = document.getElementById('mensajeEditar');
 
+  // Detectar la URL base según entorno
+  const API_URL = location.hostname === 'localhost'
+    ? 'http://localhost:5000'
+    : 'https://drummvibe2-0.onrender.com';
+
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
 
@@ -14,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Cargar datos de la clase
   async function cargarClase() {
     try {
-      const res = await fetch(`http://localhost:5000/clases/${id}`);
+      const res = await fetch(`${API_URL}/clases/${id}`);
       const clase = await res.json();
 
       if (!res.ok) {
@@ -43,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData(form);
 
     try {
-      const res = await fetch(`http://localhost:5000/clases/${id}`, {
+      const res = await fetch(`${API_URL}/clases/${id}`, {
         method: 'PUT',
         body: formData,
       });
