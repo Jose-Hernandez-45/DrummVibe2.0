@@ -6,9 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const limpiarBtn = document.getElementById('limpiarFiltros');
   const tbody = document.getElementById('tbodyClases');
 
+  // Detectar la URL base según el entorno
+  const API_URL = location.hostname === 'localhost'
+    ? 'http://localhost:5000'
+    : 'https://drummvibe2-0.onrender.com';
 
   // GUARDAR CLASE
-
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -26,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const formData = new FormData(form);
 
       try {
-        const res = await fetch('http://localhost:5000/clases', {
+        const res = await fetch(`${API_URL}/clases`, {
           method: 'POST',
           body: formData,
         });
@@ -40,14 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mostrarMensaje('Clase guardada correctamente, puedes regresar', 'lightgreen');
         setTimeout(() => {
-        }, 50000);
+          // Opcional: redirigir o limpiar formulario
+        }, 5000);
       } catch (error) {
         console.error(error);
         mostrarMensaje('Error al conectar con el servidor.', 'red');
       }
     });
   }
-
 
   // MOSTRAR MENSAJE
   function mostrarMensaje(texto, color = 'white') {
@@ -57,13 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-
   // CARGAR CLASES CON FILTROS
   async function cargarClases(filtroTexto = '', filtroNivel = '') {
     if (!tbody) return;
 
     try {
-      const res = await fetch('http://localhost:5000/clases');
+      const res = await fetch(`${API_URL}/clases`);
       const clases = await res.json();
 
       tbody.innerHTML = '';
@@ -106,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-
   // BOTONES: ELIMINAR Y EDITAR
   function agregarEventosBotones() {
     document.querySelectorAll('.btnEliminar').forEach(btn => {
@@ -114,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = btn.getAttribute('data-id');
         if (confirm('¿Seguro que quieres eliminar esta clase?')) {
           try {
-            const res = await fetch(`http://localhost:5000/clases/${id}`, {
+            const res = await fetch(`${API_URL}/clases/${id}`, {
               method: 'DELETE'
             });
             if (res.ok) {
@@ -139,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-
   // APLICAR FILTROS
   function aplicarFiltros() {
     const texto = buscador?.value || '';
@@ -156,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
       aplicarFiltros();
     });
   }
-
 
   // INICIALIZAR
   if (tbody) {
