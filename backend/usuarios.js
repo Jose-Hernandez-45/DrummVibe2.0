@@ -1,13 +1,17 @@
-// Creación de la tabla de usuarios
 document.addEventListener('DOMContentLoaded', () => {
   const tabla = document.querySelector('#tablaUsuarios tbody');
   const buscador = document.getElementById('buscador');
   let usuarios = [];
 
-  // Caragar usuarios desde la base de datos
+  // Definir la URL base según si es localhost o producción
+  const API_URL = location.hostname === 'localhost'
+    ? 'http://localhost:5000'
+    : 'https://drummvibe2-0.onrender.com';
+
+  // Cargar usuarios desde la base de datos
   async function cargarUsuarios() {
     try {
-      const res = await fetch('http://localhost:5000/usuarios');
+      const res = await fetch(`${API_URL}/usuarios`);
       usuarios = await res.json();
       mostrarUsuarios(usuarios);
     } catch (err) {
@@ -15,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  //Mostrar los usuaris dentro de la tabla
+  // Mostrar los usuarios dentro de la tabla
   function mostrarUsuarios(lista) {
     tabla.innerHTML = '';
     lista.forEach(user => {
@@ -32,14 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  //buscador de usuraios
+  // Buscador de usuarios
   buscador.addEventListener('input', () => {
     const texto = buscador.value.toLowerCase();
     const filtrados = usuarios.filter(u => u.usuario.toLowerCase().includes(texto));
     mostrarUsuarios(filtrados);
   });
 
-  // Boton de guardar cambios
+  // Botón de guardar cambios
   document.getElementById('guardarCambios').addEventListener('click', async () => {
     const filas = tabla.querySelectorAll('tr');
     const cambios = [];
@@ -51,10 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
       cambios.push({ usuario, rol: esAdmin ? 'administrador' : 'usuario' });
     });
 
-
-    // Actualizacion y cambios
+    // Actualización y cambios
     try {
-      const res = await fetch('http://localhost:5000/usuarios/actualizar', {
+      const res = await fetch(`${API_URL}/usuarios/actualizar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cambios),
