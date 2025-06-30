@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Detectar entorno (localhost o producción)
-  const API_URL = location.hostname === 'localhost'
+const API_URL = location.hostname === 'localhost'
     ? 'http://localhost:5000'
-    : 'https://drummvibe2-0.onrender.com'; // ← Reemplaza con la URL real de tu backend en Render si es otra
+    : 'https://drummvibe2-0.onrender.com';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
