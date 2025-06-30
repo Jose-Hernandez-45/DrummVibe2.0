@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
         togglePassword.classList.toggle('fa-eye-slash');
     });
 
+    // Definir URL base según entorno
+    const API_URL = location.hostname === 'localhost'
+        ? 'http://localhost:5000'
+        : 'https://drummvibe2-0.onrender.com';
+
     // Enviar formulario
     form?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -28,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const res = await fetch('http://localhost:5000/register', {
+            const res = await fetch(`${API_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ usuario, correo, contrasena }),
