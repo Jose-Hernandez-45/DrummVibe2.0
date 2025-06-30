@@ -2,12 +2,15 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// Rutas del frontend
+const rootDir = path.join(__dirname, '..');
 
 // Middleware
 app.use(cors());
@@ -15,16 +18,19 @@ app.use(express.json());
 app.use(fileUpload());
 
 // Servir archivos estáticos del frontend (index.html, templates, assets)
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(rootDir));
+
+// Servir index.html en la raíz
+app.get('/', (req, res) => {
+  res.sendFile(path.join(rootDir, 'index.html'));
+});
 
 // Servir carpeta uploads para archivos subidos
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Crear carpeta uploads si no existe
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
+app.use('/uploads', express.static(uploadsDir));
 
 // Conexión a MongoDB Atlas
 const uri = "mongodb+srv://jh733325:12345@dbdrumm.zrqaas5.mongodb.net/dbDrumm?retryWrites=true&w=majority";
@@ -33,10 +39,10 @@ mongoose.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB conectado'))
-.catch(err => console.error('Error al conectar con MongoDB:', err));
+.then(() => console.log('✅ MongoDB conectado'))
+.catch(err => console.error('❌ Error al conectar con MongoDB:', err));
 
-// Esquema de usuario
+// Esquemas
 const userSchema = new mongoose.Schema({
     usuario: { type: String, required: true, unique: true },
     correo: { type: String, required: true, unique: true },
@@ -45,22 +51,18 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
-// Esquema de clase actualizado con nivel
 const claseSchema = new mongoose.Schema({
     titulo: { type: String, required: true },
     descripcion: { type: String, required: true },
     video: { type: String, required: true },
     documento: { type: String },
-    nivel: { type: String, required: true, enum: ['1', '2', '3'] } // 1=básico, 2=intermedio, 3=avanzado
-}, {
-    timestamps: true
-});
+    nivel: { type: String, required: true, enum: ['1', '2', '3'] }
+}, { timestamps: true });
 const Clase = mongoose.model('Clase', claseSchema);
 
-// Registro de usuario
+// Registro
 app.post('/register', async (req, res) => {
     const { usuario, correo, contrasena, rol } = req.body;
-
     if (!usuario || !correo || !contrasena) {
         return res.status(400).json({ error: 'Faltan datos' });
     }
@@ -72,12 +74,7 @@ app.post('/register', async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(contrasena, 10);
-        const newUser = new User({
-            usuario,
-            correo,
-            contrasena: hashedPassword,
-            rol: rol || 'usuario'
-        });
+        const newUser = new User({ usuario, correo, contrasena: hashedPassword, rol: rol || 'usuario' });
 
         await newUser.save();
         return res.status(201).json({ message: 'Usuario registrado exitosamente' });
@@ -91,7 +88,6 @@ app.post('/register', async (req, res) => {
 // Login
 app.post('/login', async (req, res) => {
     const { usuario, contrasena } = req.body;
-
     if (!usuario || !contrasena) {
         return res.status(400).json({ error: 'Faltan datos' });
     }
@@ -107,11 +103,7 @@ app.post('/login', async (req, res) => {
             return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
         }
 
-        return res.json({
-            message: 'Login exitoso',
-            usuario: user.usuario,
-            rol: user.rol
-        });
+        return res.json({ message: 'Login exitoso', usuario: user.usuario, rol: user.rol });
 
     } catch (error) {
         console.error(error);
@@ -133,7 +125,7 @@ app.get('/usuarios', async (req, res) => {
 // Actualizar roles
 app.post('/usuarios/actualizar', async (req, res) => {
     try {
-        const updates = req.body; // [{ usuario, rol }]
+        const updates = req.body;
         for (const user of updates) {
             await User.updateOne(
                 { usuario: user.usuario },
@@ -147,7 +139,7 @@ app.post('/usuarios/actualizar', async (req, res) => {
     }
 });
 
-// Guardar clase con campo nivel
+// Crear clase
 app.post('/clases', async (req, res) => {
     try {
         const { titulo, descripcion, video, nivel } = req.body;
@@ -161,29 +153,21 @@ app.post('/clases', async (req, res) => {
         if (documento) {
             const nombreArchivo = Date.now() + '-' + Buffer.from(documento.name, 'latin1').toString('utf8').replace(/\s/g, '_');
             const rutaDestino = path.join(uploadsDir, nombreArchivo);
-
             await documento.mv(rutaDestino);
             documentoPath = nombreArchivo;
         }
 
-        const nuevaClase = new Clase({
-            titulo,
-            descripcion,
-            video,
-            nivel,
-            documento: documentoPath
-        });
-
+        const nuevaClase = new Clase({ titulo, descripcion, video, nivel, documento: documentoPath });
         await nuevaClase.save();
         return res.status(201).json({ message: 'Clase guardada correctamente' });
 
     } catch (error) {
         console.error('Error al guardar clase:', error);
-        return res.status(500).json({ error: 'Error del servidor al guardar clase' });
+        return res.status(500).json({ error: 'Error del servidor' });
     }
 });
 
-// Obtener todas las clases
+// Obtener clases
 app.get('/clases', async (req, res) => {
     try {
         const clases = await Clase.find().sort({ createdAt: -1 });
@@ -201,65 +185,46 @@ app.get('/clases/:id', async (req, res) => {
         if (!clase) return res.status(404).json({ error: 'Clase no encontrada' });
         return res.json(clase);
     } catch (error) {
-        console.error('Error al obtener clase:', error);
+        console.error(error);
         return res.status(500).json({ error: 'Error al obtener clase' });
     }
 });
 
-// Actualizar clase por ID con posible reemplazo de documento
+// Actualizar clase
 app.put('/clases/:id', async (req, res) => {
     try {
-        const id = req.params.id;
-
-        // Buscar clase existente
-        const claseExistente = await Clase.findById(id);
-        if (!claseExistente) {
-            return res.status(404).json({ error: 'Clase no encontrada' });
-        }
+        const claseExistente = await Clase.findById(req.params.id);
+        if (!claseExistente) return res.status(404).json({ error: 'Clase no encontrada' });
 
         const { titulo, descripcion, video, nivel } = req.body;
-
-        if (!titulo || !descripcion || !video || !nivel) {
-            return res.status(400).json({ error: 'Faltan datos obligatorios' });
-        }
-
         const updateData = { titulo, descripcion, video, nivel };
 
-        // Manejar reemplazo de archivo si se envía documento
-        if (req.files && req.files.documento) {
+        if (req.files?.documento) {
             const documento = req.files.documento;
-
-            // Eliminar archivo antiguo si existe
             if (claseExistente.documento) {
-                const archivoAntiguoPath = path.join(uploadsDir, claseExistente.documento);
-                if (fs.existsSync(archivoAntiguoPath)) {
-                    fs.unlinkSync(archivoAntiguoPath);
-                }
+                const oldPath = path.join(uploadsDir, claseExistente.documento);
+                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
             }
 
-            // Guardar nuevo archivo
             const nombreArchivo = Date.now() + '-' + Buffer.from(documento.name, 'latin1').toString('utf8').replace(/\s/g, '_');
             const rutaDestino = path.join(uploadsDir, nombreArchivo);
             await documento.mv(rutaDestino);
-
             updateData.documento = nombreArchivo;
         }
 
-        // Actualizar clase y devolver documento actualizado
-        const claseActualizada = await Clase.findByIdAndUpdate(id, updateData, { new: true });
+        const claseActualizada = await Clase.findByIdAndUpdate(req.params.id, updateData, { new: true });
         return res.json(claseActualizada);
 
     } catch (error) {
         console.error('Error al actualizar clase:', error);
-        return res.status(500).json({ error: 'Error del servidor al actualizar clase' });
+        return res.status(500).json({ error: 'Error del servidor' });
     }
 });
 
-// Eliminar clase por ID
+// Eliminar clase
 app.delete('/clases/:id', async (req, res) => {
     try {
-        const id = req.params.id;
-        await Clase.findByIdAndDelete(id);
+        await Clase.findByIdAndDelete(req.params.id);
         return res.json({ message: 'Clase eliminada' });
     } catch (error) {
         console.error('Error al eliminar clase:', error);
@@ -269,5 +234,5 @@ app.delete('/clases/:id', async (req, res) => {
 
 // Iniciar servidor
 app.listen(port, () => {
-    console.log(`Servidor escuchando en http://localhost:${port}`);
+    console.log(`🚀 Servidor escuchando en http://localhost:${port}`);
 });
