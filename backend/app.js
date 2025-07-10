@@ -1,161 +1,280 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const API_URL = location.hostname === 'localhost'
-    ? 'http://localhost:5000'
-    : 'https://drummvibe2-0.onrender.com';
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const fileUpload = require('express-fileupload');
+const path = require('path');
 
-  // LOGIN
-  const loginForm = document.getElementById('loginForm');
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const usuario = loginForm.usuario.value.trim();
-      const contrasena = loginForm.contrasena.value.trim();
+const app = express();
+const port = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret';
+const MONGO_URI = process.env.MONGO_URI;
 
-      try {
-        const res = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario, contrasena }),
-        });
+const rootDir = path.join(__dirname, '..');
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-        const data = await res.json();
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(fileUpload());
+app.use(express.static(rootDir));
+app.use('/uploads', express.static(uploadsDir));
 
-        if (res.ok) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('usuario', data.usuario);
-          localStorage.setItem('rol', data.rol);
-          alert('Login exitoso');
-          // Redirigir o actualizar UI aquí
-          window.location.href = 'panel.html'; // ejemplo
-        } else {
-          alert(data.error || 'Error en login');
-        }
-      } catch (error) {
-        console.error(error);
-        alert('Error en el servidor');
-      }
-    });
+// Middleware de autenticación con logs para depurar token
+function auth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Token requerido' });
   }
 
-  // CARGAR USUARIOS
-  const tabla = document.querySelector('#tablaUsuarios tbody');
-  const buscador = document.getElementById('buscador');
-  const mensaje = document.getElementById('mensajeCambios'); // div para mensajes
-  let usuarios = [];
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'Token requerido' });
+  }
 
-  async function cargarUsuarios() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      mostrarMensaje('No autorizado. Por favor inicia sesión.', false);
-      return;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: 'Token inválido o expirado' });
+  }
+}
+
+// Conexión a MongoDB
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('✅ MongoDB conectado'))
+  .catch(err => console.error('❌ Error al conectar con MongoDB:', err));
+
+// Definición de esquemas y modelos
+const userSchema = new mongoose.Schema({
+  usuario: { type: String, required: true, unique: true },
+  correo: { type: String, required: true, unique: true },
+  contrasena: { type: String, required: true },
+  rol: { type: String, default: 'usuario' }
+});
+const User = mongoose.model('User', userSchema);
+
+const claseSchema = new mongoose.Schema({
+  titulo: { type: String, required: true },
+  descripcion: { type: String, required: true },
+  video: { type: String, required: true },
+  documento: { type: String },
+  nivel: { type: String, required: true, enum: ['1', '2', '3'] }
+}, { timestamps: true });
+const Clase = mongoose.model('Clase', claseSchema);
+
+// Ruta para registro de usuarios
+app.post('/register', async (req, res) => {
+  const { usuario, correo, contrasena, rol } = req.body;
+  if (!usuario || !correo || !contrasena) {
+    return res.status(400).json({ error: 'Faltan datos' });
+  }
+
+  try {
+    const existingUser = await User.findOne({ $or: [{ usuario }, { correo }] });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Usuario o correo ya registrado' });
     }
 
-    try {
-      const res = await fetch(`${API_URL}/usuarios`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    const newUser = new User({ usuario, correo, contrasena: hashedPassword, rol: rol || 'usuario' });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Error al obtener usuarios');
-      }
+    await newUser.save();
+    return res.status(201).json({ message: 'Usuario registrado exitosamente' });
 
-      usuarios = await res.json();
-      mostrarUsuarios(usuarios);
-    } catch (err) {
-      console.error('Error al cargar usuarios:', err);
-      mostrarMensaje(err.message, false);
-    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// Ruta para login
+app.post('/login', async (req, res) => {
+  const { usuario, contrasena } = req.body;
+  if (!usuario || !contrasena) {
+    return res.status(400).json({ error: 'Faltan datos' });
   }
 
-  function mostrarUsuarios(lista) {
-    if (!tabla) return;
-    tabla.innerHTML = '';
-
-    lista.forEach(user => {
-      const fila = document.createElement('tr');
-
-      const tdUsuario = document.createElement('td');
-      tdUsuario.textContent = user.usuario;
-
-      const tdCorreo = document.createElement('td');
-      tdCorreo.textContent = user.correo;
-
-      const tdRol = document.createElement('td');
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.className = 'admin-checkbox';
-      checkbox.checked = user.rol === 'administrador';
-      checkbox.id = `chk-${user.usuario}`;
-      const label = document.createElement('label');
-      label.htmlFor = checkbox.id;
-      label.textContent = 'Admin';
-
-      tdRol.appendChild(checkbox);
-      tdRol.appendChild(label);
-
-      fila.appendChild(tdUsuario);
-      fila.appendChild(tdCorreo);
-      fila.appendChild(tdRol);
-
-      fila.dataset.usuario = user.usuario;
-      tabla.appendChild(fila);
-    });
-  }
-
-  buscador?.addEventListener('input', () => {
-    const texto = buscador.value.toLowerCase();
-    const filtrados = usuarios.filter(u => u.usuario.toLowerCase().includes(texto));
-    mostrarUsuarios(filtrados);
-  });
-
-  function mostrarMensaje(texto, exito = true) {
-    if (!mensaje) return;
-    mensaje.textContent = texto;
-    mensaje.style.color = exito ? '#49cc21' : '#da0700';
-  }
-
-  // Guardar cambios en roles
-  document.getElementById('guardarCambios')?.addEventListener('click', async () => {
-    const filas = tabla.querySelectorAll('tr');
-    const cambios = [];
-    const token = localStorage.getItem('token');
-    if (!token) {
-      mostrarMensaje('No autorizado. Por favor inicia sesión.', false);
-      return;
+  try {
+    const user = await User.findOne({ usuario });
+    if (!user) {
+      return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
     }
 
-    filas.forEach(fila => {
-      const usuario = fila.dataset.usuario;
-      const esAdmin = fila.querySelector('.admin-checkbox').checked;
-      cambios.push({ usuario, rol: esAdmin ? 'administrador' : 'usuario' });
+    const isMatch = await bcrypt.compare(contrasena, user.contrasena);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+
+    const token = jwt.sign(
+      { usuario: user.usuario, rol: user.rol },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    return res.json({
+      message: 'Login exitoso',
+      token,
+      usuario: user.usuario,
+      rol: user.rol
     });
 
-    try {
-      const res = await fetch(`${API_URL}/usuarios/actualizar`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(cambios),
-      });
-      const data = await res.json();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error del servidor' });
+  }
+});
 
-      if (res.ok) {
-        mostrarMensaje(data.message || 'Cambios guardados correctamente.');
-      } else {
-        mostrarMensaje(data.error || 'Error al guardar cambios.', false);
-      }
-    } catch (error) {
-      console.error(error);
-      mostrarMensaje('Error al guardar los cambios.', false);
+// Obtener lista de usuarios (requiere autenticación)
+app.get('/usuarios', auth, async (req, res) => {
+  try {
+    const usuarios = await User.find({}, 'usuario correo rol').sort({ rol: -1 });
+    return res.json(usuarios);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+});
+
+// Actualizar roles de usuarios (requiere autenticación y rol administrador)
+app.post('/usuarios/actualizar', auth, async (req, res) => {
+  if (req.user.rol !== 'administrador') return res.status(403).json({ error: 'Acceso denegado' });
+
+  try {
+    const updates = req.body;
+    for (const user of updates) {
+      await User.updateOne(
+        { usuario: user.usuario },
+        { rol: user.rol === 'administrador' ? 'administrador' : 'usuario' }
+      );
     }
-  });
+    return res.json({ message: 'Roles actualizados correctamente' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al actualizar roles' });
+  }
+});
 
-  // Solo cargar usuarios si existe la tabla
-  if (tabla) cargarUsuarios();
+// Validar archivos PDF, Word, MP3, MP4 y tamaño máximo 10MB
+function validarArchivo(documento) {
+  const ALLOWED_TYPES = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'audio/mpeg',
+    'video/mp4'
+  ];
+  const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
+  return documento && ALLOWED_TYPES.includes(documento.mimetype) && documento.size <= MAX_SIZE;
+}
+
+// Crear clase (requiere autenticación)
+app.post('/clases', auth, async (req, res) => {
+  try {
+    const { titulo, descripcion, video, nivel } = req.body;
+    const documento = req.files?.documento;
+
+    if (!titulo || !descripcion || !video || !nivel) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    let documentoPath = '';
+    if (documento) {
+      if (!validarArchivo(documento)) {
+        return res.status(400).json({ error: 'Archivo no válido o demasiado grande' });
+      }
+
+      const nombreArchivo = Date.now() + '-' + documento.name.replace(/\s/g, '_');
+      const rutaDestino = path.join(uploadsDir, nombreArchivo);
+      await documento.mv(rutaDestino);
+      documentoPath = nombreArchivo;
+    }
+
+    const nuevaClase = new Clase({ titulo, descripcion, video, nivel, documento: documentoPath });
+    await nuevaClase.save();
+    return res.status(201).json({ message: 'Clase guardada correctamente' });
+
+  } catch (error) {
+    console.error('Error al guardar clase:', error);
+    return res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// Obtener clase por ID (requiere autenticación)
+app.get('/clases/:id', auth, async (req, res) => {
+  try {
+    const clase = await Clase.findById(req.params.id);
+    if (!clase) {
+      return res.status(404).json({ error: 'Clase no encontrada' });
+    }
+    return res.json(clase);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener la clase' });
+  }
+});
+
+// Actualizar clase por ID (requiere autenticación)
+app.put('/clases/:id', auth, async (req, res) => {
+  try {
+    const { titulo, descripcion, video, nivel } = req.body;
+    const documento = req.files?.documento;
+
+    if (!titulo || !descripcion || !video || !nivel) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+
+    let documentoPath;
+    if (documento) {
+      if (!validarArchivo(documento)) {
+        return res.status(400).json({ error: 'Archivo no válido o demasiado grande' });
+      }
+
+      const nombreArchivo = Date.now() + '-' + documento.name.replace(/\s/g, '_');
+      const rutaDestino = path.join(uploadsDir, nombreArchivo);
+      await documento.mv(rutaDestino);
+      documentoPath = nombreArchivo;
+    }
+
+    const updateData = { titulo, descripcion, video, nivel };
+    if (documentoPath) {
+      updateData.documento = documentoPath;
+    }
+
+    const claseActualizada = await Clase.findByIdAndUpdate(req.params.id, updateData, { new: true });
+    if (!claseActualizada) {
+      return res.status(404).json({ error: 'Clase no encontrada' });
+    }
+
+    return res.json({ message: 'Clase actualizada correctamente', clase: claseActualizada });
+
+  } catch (error) {
+    console.error('Error al actualizar clase:', error);
+    return res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// Obtener todas las clases (requiere autenticación si quieres, o público)
+app.get('/clases', async (req, res) => {
+  try {
+    const clases = await Clase.find().sort({ createdAt: -1 });
+    return res.json(clases);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener clases' });
+  }
+});
+
+// Iniciar servidor
+app.listen(port, () => {
+  console.log(`🚀 Servidor escuchando en http://localhost:${port}`);
 });
