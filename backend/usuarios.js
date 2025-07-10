@@ -8,10 +8,33 @@ document.addEventListener('DOMContentLoaded', () => {
     ? 'http://localhost:5000'
     : 'https://drummvibe2-0.onrender.com';
 
+  // Obtener token de localStorage
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('No estás autenticado. Por favor inicia sesión.');
+    window.location.href = './login.html';
+    return;
+  }
+
   async function cargarUsuarios() {
     try {
-      const res = await fetch(`${API_URL}/usuarios`);
+      const res = await fetch(`${API_URL}/usuarios`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.status === 401) {
+        // Token inválido o expirado
+        alert('Sesión expirada. Por favor inicia sesión de nuevo.');
+        localStorage.clear();
+        window.location.href = './login.html';
+        return;
+      }
+
       if (!res.ok) throw new Error('Error al obtener usuarios');
+
       usuarios = await res.json();
       mostrarUsuarios(usuarios);
     } catch (err) {
@@ -25,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     lista.forEach(user => {
       const fila = document.createElement('tr');
 
-      // Crear celdas de forma segura (sin innerHTML)
       const tdUsuario = document.createElement('td');
       tdUsuario.textContent = user.usuario;
 
@@ -40,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       checkbox.id = `chk-${user.usuario}`;
       const label = document.createElement('label');
       label.htmlFor = checkbox.id;
-      label.textContent = 'Admin';
+
 
       tdRol.appendChild(checkbox);
       tdRol.appendChild(label);
@@ -79,12 +101,20 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch(`${API_URL}/usuarios/actualizar`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}` // Si usas JWT
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(cambios),
       });
+
+      if (res.status === 401) {
+        alert('Sesión expirada. Por favor inicia sesión de nuevo.');
+        localStorage.clear();
+        window.location.href = './login.html';
+        return;
+      }
+
       const data = await res.json();
 
       if (res.ok) {
