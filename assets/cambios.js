@@ -41,8 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
       panelLink.textContent = 'Panel';
       panelLink.style.cursor = 'pointer';
       panelLink.style.display = 'block';
-      panelLink.style.fontWeight = 'bold';
-      panelLink.style.color = '#fff';
 
       menu.insertBefore(panelLink, bienvenidaLink.nextSibling);
 
@@ -52,8 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
         panelAdminLink.textContent = 'Panel Admin';
         panelAdminLink.style.cursor = 'pointer';
         panelAdminLink.style.display = 'block';
-        panelAdminLink.style.fontWeight = 'bold';
-        panelAdminLink.style.color = '#fff';
 
         menu.insertBefore(panelAdminLink, panelLink.nextSibling);
       }
