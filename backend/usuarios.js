@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const tabla = document.querySelector('#tablaUsuarios tbody');
   const buscador = document.getElementById('buscador');
-  const mensaje = document.getElementById('mensajeCambios'); // Un div para mensajes (añadir en HTML)
+  const mensaje = document.getElementById('mensajeCambios'); // Debe existir en el HTML
   let usuarios = [];
 
   const API_URL = location.hostname === 'localhost'
@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      if (res.status === 401) {
-        // Token inválido o expirado
-        alert('Sesión expirada. Por favor inicia sesión de nuevo.');
+      if (res.status === 401 || res.status === 403) {
+        // Token inválido, expirado o no autorizado
+        alert('Sesión expirada o no autorizada. Por favor inicia sesión de nuevo.');
         localStorage.clear();
         window.location.href = './login.html';
         return;
@@ -60,9 +60,10 @@ document.addEventListener('DOMContentLoaded', () => {
       checkbox.className = 'admin-checkbox';
       checkbox.checked = user.rol === 'administrador';
       checkbox.id = `chk-${user.usuario}`;
+
+      // Etiqueta para checkbox (aunque no tiene texto visible)
       const label = document.createElement('label');
       label.htmlFor = checkbox.id;
-
 
       tdRol.appendChild(checkbox);
       tdRol.appendChild(label);
@@ -94,7 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     filas.forEach(fila => {
       const usuario = fila.dataset.usuario;
-      const esAdmin = fila.querySelector('.admin-checkbox').checked;
+      const checkbox = fila.querySelector('.admin-checkbox');
+      if (!checkbox) return; // Evitar error si no encuentra el checkbox
+
+      const esAdmin = checkbox.checked;
       cambios.push({ usuario, rol: esAdmin ? 'administrador' : 'usuario' });
     });
 
@@ -108,10 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(cambios),
       });
 
-      if (res.status === 401) {
-        alert('Sesión expirada. Por favor inicia sesión de nuevo.');
+      if (res.status === 401 || res.status === 403) {
+        alert('Sesión expirada o no autorizada. Por favor inicia sesión de nuevo.');
         localStorage.clear();
-        window.location.href = './login.html';
+        window.location.href = '/templates/login.html';
         return;
       }
 
