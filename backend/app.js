@@ -10,8 +10,19 @@ const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'default_jwt_secret';
+
+// Validar variables de entorno importantes
+if (!process.env.JWT_SECRET) {
+  console.error('❌ La variable de entorno JWT_SECRET no está definida.');
+  process.exit(1);
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
 const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error('❌ La variable de entorno MONGO_URI no está definida.');
+  process.exit(1);
+}
 
 const rootDir = path.join(__dirname, '..');
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -26,15 +37,18 @@ app.use('/uploads', express.static(uploadsDir));
 
 // Middleware de autenticación
 function auth(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: 'Token requerido' });
+
+  const token = authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token requerido' });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
-  } catch {
-    return res.status(403).json({ error: 'Token inválido' });
+  } catch (err) {
+    return res.status(403).json({ error: 'Token inválido o expirado' });
   }
 }
 
@@ -44,9 +58,12 @@ mongoose.connect(MONGO_URI, {
   useUnifiedTopology: true,
 })
   .then(() => console.log('✅ MongoDB conectado'))
-  .catch(err => console.error('❌ Error al conectar con MongoDB:', err));
+  .catch(err => {
+    console.error('❌ Error al conectar con MongoDB:', err);
+    process.exit(1);
+  });
 
-// Definición de esquemas y modelos
+// Esquemas y modelos
 const userSchema = new mongoose.Schema({
   usuario: { type: String, required: true, unique: true },
   correo: { type: String, required: true, unique: true },
@@ -64,7 +81,9 @@ const claseSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Clase = mongoose.model('Clase', claseSchema);
 
-// Ruta para registro de usuarios
+// Rutas
+
+// Registro de usuarios
 app.post('/register', async (req, res) => {
   const { usuario, correo, contrasena, rol } = req.body;
   if (!usuario || !correo || !contrasena) {
@@ -89,7 +108,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Ruta para login
+// Login
 app.post('/login', async (req, res) => {
   const { usuario, contrasena } = req.body;
   if (!usuario || !contrasena) {
@@ -113,7 +132,6 @@ app.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    // Respuesta clara con usuario y rol explícitos
     return res.json({
       message: 'Login exitoso',
       token,
@@ -126,7 +144,6 @@ app.post('/login', async (req, res) => {
     return res.status(500).json({ error: 'Error del servidor' });
   }
 });
-
 
 // Obtener lista de usuarios (requiere autenticación)
 app.get('/usuarios', auth, async (req, res) => {
@@ -141,14 +158,14 @@ app.get('/usuarios', auth, async (req, res) => {
 
 // Actualizar roles de usuarios (requiere autenticación y rol administrador)
 app.post('/usuarios/actualizar', auth, async (req, res) => {
-  if (req.user.rol !== 'administrador') return res.status(403).json({ error: 'Acceso denegado' });
+  if (req.user.rol.toLowerCase() !== 'administrador') return res.status(403).json({ error: 'Acceso denegado' });
 
   try {
     const updates = req.body;
     for (const user of updates) {
       await User.updateOne(
         { usuario: user.usuario },
-        { rol: user.rol === 'administrador' ? 'administrador' : 'usuario' }
+        { rol: user.rol?.toLowerCase() === 'administrador' ? 'administrador' : 'usuario' }
       );
     }
     return res.json({ message: 'Roles actualizados correctamente' });
@@ -211,4 +228,6 @@ app.get('/clases', async (req, res) => {
 // Iniciar servidor
 app.listen(port, () => {
   console.log(`🚀 Servidor escuchando en http://localhost:${port}`);
+  console.log(`🔑 JWT_SECRET is set: ${!!JWT_SECRET}`);
+  console.log(`🌐 MongoDB URI is set: ${!!MONGO_URI}`);
 });
