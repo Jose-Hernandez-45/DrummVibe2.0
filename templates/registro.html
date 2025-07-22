@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrumVibe</title>
+
+    <!-- Estilos e íconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/style_l.css">
+    <link rel="icon" href="../assets/img/logo.jpg">
+    <meta name="author" content="Jose Miguel Hernandez Galindo">
+</head>
+<body>
+
+    <!-- loader -->
+    <div id="loader">
+        <img src="../assets/img/logo.jpg" alt="Logo DrumVibe" />
+    </div>
+
+    <!-- registro formulario -->
+    <form id="registroForm" class="glass-form">
+        <h2>Registro</h2>
+
+        <!-- Mensaje de feedback -->
+        <div id="message" style="margin-top: 5px; font-weight: bold;"></div>
+
+        <label for="usuario">Nombre de usuario:</label>
+        <input type="text" id="usuario" name="usuario" required />
+
+        <label for="correo">Correo:</label>
+        <input type="email" id="correo" name="correo" required />
+
+        <label for="contrasena">Crea una contraseña:</label>
+        <div class="password-container">
+            <input type="password" id="contrasena" name="contrasena" required />
+            <i id="togglePassword" class="fa-solid fa-eye" style="cursor: pointer;"></i>
+        </div>
+
+        <button type="submit">Registrate</button>
+        <span>¿Ya tienes cuenta? <a href="./login.html" class="reg">Inicia sesión</a></span>
+    </form>
+
+    <!-- scripting -->
+    <script src="../assets/main.js"></script>
+    <script src="../backend/registro.js"></script>
+</body>
+</html>

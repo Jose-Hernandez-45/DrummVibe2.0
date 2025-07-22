@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrumVibe</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="icon" href="../assets/img/logo.jpg">
+    <link rel="stylesheet" href="../style/style_l.css">
+    <meta type=author name="Jose Miguel Hernandez Galindo">
+</head>
+<body>
+
+
+    <!-- loader -->
+  <div id="loader">
+    <img src="/assets/img/logo.jpg" alt="Logo DrumVibe" />
+  </div>
+
+    <!-- formulario -->
+    <form id="loginForm" class="glass-form">
+        <h2>Iniciar Sesión</h2>
+
+        <div id="message" style="margin-top: 5px; font-weight: bold;"></div>
+        
+        <label for="usuario">Usuario:</label>
+        <input type="text" id="usuario" name="usuario" required>
+
+        <label for="contrasena">Contraseña</label>
+        <div style="position: relative;">
+            <input type="password" id="contrasena" name="contrasena" required style="padding-right: 30px;">
+            <i id="togglePassword" class="fa-solid fa-eye" 
+            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+        </div>
+
+        <button type="submit">Ingresar</button>
+        <button type="button" onclick="window.location.href='../index.html'" class="btn-regresar">Volver al inicio</button>
+        <span>¿No tienes cuenta? <a href="./registro.html" class="reg">Registrate</a></span>
+    </form>
+
+    
+    <!-- scripting -->
+    <script src="../assets/main.js"></script>
+    <script src="../backend/login.js"></script>
+</body>
+</html>

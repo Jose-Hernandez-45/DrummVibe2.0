@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar Clase</title>
+  <link rel="stylesheet" href="/style/style_ad.css" />
+  <link rel="icon" href="/assets/img/logo.jpg" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <img src="/assets/img/logo.jpg" alt="logo" class="logo" />
+      <h2 class="title_h">DrummVibe</h2>
+    </div>
+    <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+    <nav class="menu" id="menu">
+      <a href="./admin.html"><i class="fa-solid fa-book">&nbsp;</i>Ejercicios</a>
+      <a href="list_user.html"><i class="fa-solid fa-user">&nbsp;</i>Lista Usuarios</a>
+      <a href="/index.html"><i class="fa-solid fa-house">&nbsp;</i>Inicio</a>
+    </nav>
+  </header>
+
+  <h1 class="title"><i class="fa-solid fa-pen-to-square">&nbsp;</i>Editar Clase</h1>
+
+  <section class="container mt-5 glass-form" style="max-width: 700px;">
+    <form id="formEditarClase" enctype="multipart/form-data" method="POST">
+      <div class="mb-3">
+        <label for="titulo" class="form-label text-white">Título</label>
+        <input type="text" class="form-control" id="titulo" name="titulo" required />
+      </div>
+
+      <div class="mb-3">
+        <label for="descripcion" class="form-label text-white">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label for="video" class="form-label text-white">Link de Video</label>
+        <input type="url" class="form-control" id="video" name="video" required />
+      </div>
+
+      <div class="mb-3">
+        <label for="documento" class="form-label text-white">Reemplazar Documento (opcional)</label>
+        <input type="file" class="form-control" id="documento" name="documento" accept=".pdf,.doc,.docx,.pptx,.zip" />
+      </div>
+
+      <div class="mb-3">
+        <label for="nivel" class="form-label text-white">Nivel</label>
+        <select class="form-control" id="nivel" name="nivel" required>
+          <option value="1">Básico</option>
+          <option value="2">Intermedio</option>
+          <option value="3">Avanzado</option>
+        </select>
+      </div>
+
+      <div id="mensajeEditar" class="text-white mb-3"></div>
+
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+      </button>
+      <a href="./admin.html" class="btn btn-danger">
+        <i class="fa-solid fa-arrow-left"></i> Cancelar
+      </a>
+    </form>
+  </section>
+
+  <script src="/backend/editar_clase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

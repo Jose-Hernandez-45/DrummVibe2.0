@@ -1,0 +1,174 @@
+/* Reset y base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #535353;
+  font-family: 'Jura', sans-serif;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* Loader */
+#loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #535353;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#loader img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* Header */
+header {
+  background-color: #27241d;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+/* Menú principal */
+.menu {
+  display: flex;
+  gap: 30px;
+}
+
+.menu a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+  transition: color 0.3s ease;
+  display: inline-block;
+}
+
+.menu a:hover {
+  color: #da0700;
+}
+
+.menu-toggle {
+  display: none; /* si quieres mostrarlo en móvil, deberás activar con media queries */
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Grids para menus secundarios */
+.menu_h,
+.menu_e {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  justify-items: center;
+  padding: 20px;
+}
+
+/* Pads batería */
+.pad {
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  margin: 10px;
+  background-color: #444;
+  border-radius: 12px;
+  line-height: 120px;
+  font-size: 24px;
+  user-select: none;
+  cursor: pointer;
+  box-shadow: 0 5px #666;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  color: white;
+}
+
+.pad:active,
+.pad.active {
+  background-color: #777;
+  box-shadow: 0 2px #333;
+  transform: translateY(3px);
+}
+
+/* Controles metrónomo */
+#metronome-controls {
+  margin-top: 40px;
+  background-color: #333;
+  display: inline-block;
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  text-align: left;
+}
+
+#bpm-label {
+  font-weight: bold;
+}
+
+#bpm-input {
+  width: 100px;
+  margin-left: 10px;
+  padding: 5px;
+  border-radius: 4px;
+  border: none;
+  font-size: 1rem;
+}
+
+#toggle-metronome {
+  margin-top: 15px;
+  padding: 10px 25px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  background-color: #28a745;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+#toggle-metronome.off {
+  background-color: #dc3545;
+}

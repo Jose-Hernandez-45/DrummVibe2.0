@@ -1,0 +1,5 @@
+git add .
+git commit -m "Nueva funcionalidad para versión v1.1.0"
+git tag -a v1.1.0 -m "Versión v1.1.0 - nuevas funciones"
+git push origin main
+git push origin v1.1.0

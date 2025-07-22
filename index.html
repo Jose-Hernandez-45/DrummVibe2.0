@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrumVibe</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style/style.css">
+    <link rel="icon" href="./assets/img/logo.jpg">
+    <meta type=author name="Jose Miguel Hernandez Galindo">
+</head>
+
+<body>
+
+    <!-- loader -->
+    <div id="loader">
+        <img src="/assets/img/logo.jpg" alt="Logo DrumVibe" />
+    </div>
+
+
+    <!-- navegador -->
+    <header>
+        <div class="header-left">
+            <img src="./assets/img/logo.jpg" alt="logo" class="logo" />
+            <h2 class="title_h">DrummVibe</h2>
+        </div>
+        <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+        <nav class="menu" id="menu">
+            <a href="#ejercicios">Ejercicios</a>
+            <a href="#herramientas">Herramientas</a>
+            <a href="./templates/login.html">Iniciar sesión <i class="fa-solid fa-arrow-right"></i></a>
+        </nav>
+    </header>
+
+
+    <!-- carrusel -->
+    <section id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="./assets/img/4.png" class="d-block w-100 object-fit-cover" alt="Slide 1">
+            </div>
+            <div class="carousel-item">
+                <img src="./assets/img/5.png" class="d-block w-100 object-fit-cover" alt="Slide 2">
+            </div>
+            <div class="carousel-item">
+                <img src="./assets/img/6.png" class="d-block w-100 object-fit-cover" alt="Slide 3">
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
+    </section>
+
+
+    <!-- seccion1 -->
+    <section class="info">
+        <h2>Actividades y más.</h2>
+        <div class="super">
+            <div class="info_c">
+                <h4>Guías</h4>
+                <img src="./assets/img/guia.png" alt="guia" class="guia">
+            <br><br>
+            <span>
+                Sigue nuestras guías de estudio.
+            </span>
+            </div>
+            <div class="info_c">
+                <h4>Metodologías</h4>
+                <img src="./assets/img/met.webp" alt="metodos" class="guia2">
+                <br><br>
+                <span>
+                    Aprende con las metodologías mas usadas.
+                </span>
+            </div>
+            <div class="info_c">
+                <h4>Herramientas</h4>
+                <img src="./assets/img/herr.jpg" alt="herramientas" class="guia3">
+                <br><br>
+                <span>
+                    Usa las herramientas para un mejor estudio.
+                </span>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ejercicios -->
+    <section class="ejer" id="ejercicios">
+        <h2>Ejercicios</h2>
+        <div class="menu_e">
+        <!-- Tarjeta 1: Calentamientos -->
+        <div class="card_ejercicio">
+            <i class="fas fa-fire"></i>
+            <h3>Calentamiento</h3>
+            <p>Activa tus manos y pies con ejercicios esenciales para empezar con energía.</p>
+        </div>
+
+        <!-- Tarjeta 2: Ritmos Básicos -->
+        <div class="card_ejercicio">
+            <i class="fas fa-drum"></i>
+            <h3>Ritmos Básicos</h3>
+            <p>Domina los grooves fundamentales para tocar cualquier estilo musical.</p>
+        </div>
+
+        <!-- Tarjeta 3: Fills Creativos -->
+        <div class="card_ejercicio">
+            <i class="fas fa-magic"></i>
+            <h3>Fills Creativos</h3>
+            <p>Añade personalidad a tus transiciones con patrones únicos y dinámicos.</p>
+        </div>
+        </div>
+        <span class="desc_e">
+             ¡Pon a prueba tu ritmo, técnica y creatividad con ejercicios diseñados para llevar tu batería al siguiente nivel!
+        </span>
+    </section>
+
+
+    <!-- herramientas -->
+    <section class="herr" id="herramientas">
+        <h2>Herramientas</h2>
+        <div class="menu_h">
+
+        <div class="card_herramienta">
+            <i class="fas fa-music"></i>
+            <h3>Partituras</h3>
+            <p>Accede a partituras interactivas y PDF para mejorar tu lectura musical y técnica.</p>
+        </div>
+
+        <div class="card_herramienta">
+            <i class="fas fa-stopwatch"></i>
+            <h3>Metrónomo</h3>
+            <p>Practica con precisión usando un metrónomo digital para marcar el tiempo exacto.</p>
+        </div>
+
+        <div class="card_herramienta">
+            <i class="fas fa-drum"></i>
+            <h3>Batería Online</h3>
+            <p>Experimenta y diviértete con una batería virtual desde tu navegador.</p>
+        </div>
+        </div> 
+        <span class="desc_h">
+            Explora recursos diseñados para optimizar tu práctica:
+            metrónomos, batería online, partituras y más.
+        </span>  
+    </section>
+
+    <!-- footer -->
+    <footer>
+    <h3>Contacto</h3>
+    <p>Email: DrummVibe@gmail.com</p>
+    <p>Teléfono: +52 449 123 4567</p>
+    <div class="redes-sociales">
+        <a href="# target="_blank" aria-label="Facebook">
+        <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="#" target="_blank" aria-label="Twitter">
+        <i class="fab fa-twitter"></i>
+        </a>
+        <a href="#" target="_blank" aria-label="Instagram">
+        <i class="fab fa-instagram"></i>
+        </a>
+    </div>
+    </footer>
+    <!-- scripting -->
+    <script src="/assets/main.js"></script>
+    <script src="/assets/cambios.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

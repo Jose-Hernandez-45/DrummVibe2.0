@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Batería Virtual con Metrónomo</title>
+    <link rel="stylesheet" href="/style/bateria.css" />
+    <link rel="icon" href="/assets/img/logo.jpg" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&display=swap" rel="stylesheet" />
+    <meta name="author" content="Jose Miguel Hernandez Galindo" />
+</head>
+<body>
+    <!-- loader -->
+  <div id="loader">
+    <img src="/assets/img/logo.jpg" alt="Logo DrumVibe" />
+  </div>
+
+  <!-- navegador -->
+  <section>
+    <header>
+      <div class="header-left">
+        <img src="/assets/img/logo.jpg" alt="logo" class="logo" />
+        <h2 class="title_h">DrummVibe</h2>
+      </div>
+      <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+      <nav class="menu" id="menu">
+        <a href="/index.html"
+          >Regresar <i class="fa-solid fa-arrow-right"></i
+        ></a>
+      </nav>
+    </header>
+  </section>
+
+  <h1>Batería Virtual con Metrónomo</h1>
+  <!-- Controles metrónomo -->
+  <div id="metronome-controls">
+    <label id="bpm-label" for="bpm-input">BPM:</label>
+    <input type="number" id="bpm-input" min="40" max="240" value="100" />
+    <br />
+    <button id="toggle-metronome">Iniciar Metrónomo</button>
+  </div>
+
+  <div>
+    <div class="pad" data-sound="kick" data-key="A">Kick (A)</div>
+    <div class="pad" data-sound="snare" data-key="S">Snare (S)</div>
+    <div class="pad" data-sound="hihat" data-key="D">Hi-Hat (D)</div>
+    <div class="pad" data-sound="tom" data-key="F">Tom (F)</div>
+  </div>
+
+  <script src="/assets/bateria.js"></script>
+  <script src="/assets/main.js"></script>
+</body>
+</html>

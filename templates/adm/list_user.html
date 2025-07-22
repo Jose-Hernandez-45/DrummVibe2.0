@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios</title>
+    <link rel="stylesheet" href="/style/style_ad.css">
+    <link rel="icon" href="/assets/img/logo.jpg">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jura:wght@300..700&display=swap" rel="stylesheet">
+    <meta type=author name="Jose Miguel Hernandez Galindo">
+</head>
+<body>
+    <div id="loader">
+        <img src="/assets/img/logo.jpg" alt="Logo DrumVibe" />
+    </div>
+
+
+    <!-- navegador -->
+    <header>
+        <div class="header-left">
+            <img src="/assets/img/logo.jpg" alt="logo" class="logo" />
+            <h2 class="title_h">DrummVibe</h2>
+        </div>
+        <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+        <nav class="menu" id="menu">
+            <a href="./admin.html"><i class="fa-solid fa-book">&nbsp;</i>Ejercicos</a>
+            <a href="/index.html"><i class="fa-solid fa-house">&nbsp;</i>Inicio</a>
+            <a href="#" id="logout"><i class="fa-solid fa-right-from-bracket">&nbsp;</i>Cerrar sesión</a>
+        </nav>
+    </header>
+    <div class="container mt-5">
+    <h1 class="title"><i class="fa-solid fa-user">&nbsp;</i>Gestión de Usuarios</h1><br>
+    <input type="text" id="buscador" class="form-control mb-3" placeholder="Buscar usuario...">
+    <table class="table table-dark table-hover" id="tablaUsuarios">
+        <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Correo</th>
+            <th>Administrador</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <button id="guardarCambios" class="btn btn-success">Guardar cambios</button>
+    </div>
+    <script src="/assets/main.js"></script>
+    <script src="/assets/adm.js"></script>
+    <script src="/assets/cambios.js"></script>
+    <script src="/backend/usuarios.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
