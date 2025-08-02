@@ -18,11 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function escapeHTML(text) {
     return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+      ? text.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+      : '';
   }
 
   function getToken() {
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return match ? match[1] : null;
   }
 
-  // Envío de formulario para crear una clase
+  // --- FORMULARIO para crear clase ---
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -76,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mostrarMensaje('Clase guardada correctamente, puedes regresar', 'lightgreen');
         setTimeout(() => form.reset(), 5000);
-        // Refrescar listado
         cargarClases();
         cargarClasesEnPanel();
       } catch (error) {
@@ -86,13 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Cargar y mostrar clases en tabla con filtros
+  // --- CARGAR y mostrar clases en tabla con filtros ---
   async function cargarClases(filtroTexto = '', filtroNivel = '') {
     if (!tbody) return;
 
     try {
-      const res = await fetch(`${API_URL}/clases`);
-      if (!res.ok) throw new Error('Error al obtener clases');
+      const res = await fetch(`${API_URL}/clases`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          tbody.innerHTML = '<tr><td colspan="3" style="color:red;">Acceso no autorizado. Por favor inicia sesión.</td></tr>';
+          return;
+        }
+        throw new Error('Error al obtener clases');
+      }
       const clases = await res.json();
 
       tbody.innerHTML = '';
@@ -137,14 +145,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Cargar clases para mostrar en paneles por nivel con videos embebidos
+  // --- CARGAR clases en paneles (básico, intermedio, avanzado) ---
   async function cargarClasesEnPanel() {
     const algunoExiste = Object.values(contenedoresPanel).some(div => div != null);
     if (!algunoExiste) return;
 
     try {
-      const res = await fetch(`${API_URL}/clases`);
-      if (!res.ok) throw new Error('Error al obtener clases');
+      const res = await fetch(`${API_URL}/clases`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          Object.values(contenedoresPanel).forEach(div => {
+            if (div) div.innerHTML = '<p style="color:red;">Acceso no autorizado. Por favor inicia sesión.</p>';
+          });
+          return;
+        }
+        throw new Error('Error al obtener clases');
+      }
       const clases = await res.json();
 
       Object.values(contenedoresPanel).forEach(div => {
@@ -162,14 +180,17 @@ document.addEventListener('DOMContentLoaded', () => {
           <p class="clase-descripcion">${escapeHTML(clase.descripcion)}</p>
           ${
             videoId
-              ? `<div class="video-container">
+              ? `<div class="video-container mb-2">
                   <iframe 
-                    src="https://www.youtube.com/embed/${videoId}"
+                    src="https://www.youtube.com/embed/${videoId}" 
                     frameborder="0" allowfullscreen title="Video de clase">
                   </iframe>
                 </div>`
               : `<p><a class="clase-video" href="${escapeHTML(clase.video)}" target="_blank" rel="noopener noreferrer">Ver video</a></p>`
           }
+          <a href="/templates/clase.html?id=${encodeURIComponent(clase._id)}" class="btn btn-outline-primary mt-2">
+            Ver clase completa <i class="fa-solid fa-arrow-right"></i>
+          </a>
         `;
 
         const contenedor = contenedoresPanel[clase.nivel];
@@ -183,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Añadir eventos a botones editar y eliminar
+  // --- Añadir eventos a botones editar y eliminar ---
   function agregarEventosBotones() {
     // Botones eliminar
     const btnEliminar = document.querySelectorAll('.btnEliminar');
@@ -227,14 +248,97 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Aplicar filtros actuales y recargar la tabla
+// --- Mostrar detalle de clase en clase.html ---
+if (window.location.pathname.includes('clase.html')) {
+  const titulo = document.getElementById("titulo-clase");
+  const video = document.getElementById("video-clase");
+  const descripcion = document.getElementById("descripcion-clase");
+  const archivoContenedor = document.getElementById("archivo-clase");
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) {
+    if (titulo) titulo.textContent = "Clase no encontrada";
+    if (descripcion) descripcion.textContent = "ID de clase no especificado.";
+    if (archivoContenedor) archivoContenedor.innerHTML = '';
+    return;
+  }
+
+  fetch(`${API_URL}/clases/${id}`, {
+    headers: { 'Authorization': `Bearer ${getToken()}` }
+  })
+    .then(res => {
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('Acceso no autorizado. Por favor inicia sesión.');
+        }
+        throw new Error('Clase no encontrada');
+      }
+      return res.json();
+    })
+    .then(clase => {
+      // Mostrar título
+      if (titulo) titulo.textContent = clase.titulo;
+
+      // Mostrar video (YouTube embebido o link directo)
+      if (video) {
+        const videoId = extraerYoutubeId(clase.video);
+        video.src = videoId ? `https://www.youtube.com/embed/${videoId}` : clase.video;
+      }
+
+      // Mostrar descripción
+      if (descripcion) descripcion.textContent = clase.descripcion;
+
+      // Mostrar archivo adjunto
+      if (archivoContenedor) {
+        if (clase.documento && clase.documento.trim() !== '') {
+          const urlArchivo = `${API_URL}/uploads/${encodeURIComponent(clase.documento)}`;
+          const extension = clase.documento.split('.').pop().toLowerCase();
+
+          if (extension === 'pdf') {
+            archivoContenedor.innerHTML = `
+              <div style="width: 100%; height: 500px; border: 1px solid #ccc;">
+                <iframe 
+                  src="${urlArchivo}" 
+                  width="100%" 
+                  height="100%" 
+                  style="border:none;" 
+                  title="Documento PDF">
+                </iframe>
+              </div>
+            `;
+          } else {
+            archivoContenedor.innerHTML = `
+              <p>Archivo adjunto: 
+                <a href="${urlArchivo}" download target="_blank" rel="noopener noreferrer">
+                  Descargar archivo
+                </a>
+              </p>
+            `;
+          }
+        } else {
+          archivoContenedor.innerHTML = ''; // Limpia si no hay archivo
+        }
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      if (titulo) titulo.textContent = "Clase no encontrada";
+      if (descripcion) descripcion.textContent = err.message || "No se pudo cargar la información de la clase.";
+      if (archivoContenedor) archivoContenedor.innerHTML = '';
+    });
+}
+
+
+  // --- Aplicar filtros ---
   function aplicarFiltros() {
     const texto = buscador?.value || '';
     const nivel = filtroNivel?.value || '';
     cargarClases(texto, nivel);
   }
 
-  // Listeners para filtros y botón limpiar
+  // --- Listeners filtros y botón limpiar ---
   if (buscador) buscador.addEventListener('input', aplicarFiltros);
   if (filtroNivel) filtroNivel.addEventListener('change', aplicarFiltros);
   if (limpiarBtn) {
@@ -245,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Inicializar carga
+  // --- Inicializar carga ---
   if (tbody) cargarClases();
   if (Object.values(contenedoresPanel).some(div => div != null)) cargarClasesEnPanel();
 });

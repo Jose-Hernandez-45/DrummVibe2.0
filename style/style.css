@@ -302,8 +302,22 @@ footer p {
 .redes-sociales a:hover {
   color: #ff3b34;
 }
+.lead{
+  color: white;
+}
+#titulo-clase{
+  color:#8f0000;
+}
+.desc_t{
+  color: white;
+}
 
-
+#archivo-clase{
+  color: white;
+}
+.descarga_a{
+  color:#ff0000;
+}
 @media (max-width: 1024px) {
   #heroCarousel {
     height: 400px;

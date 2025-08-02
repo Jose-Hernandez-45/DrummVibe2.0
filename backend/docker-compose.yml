@@ -29,6 +29,6 @@ services:
     entrypoint: >
       sh -c "certbot certonly --webroot
       --webroot-path=/var/www/certbot
-      --email tu-correo@dominio.com
+      --email jh733325@gmail.com.com
       --agree-tos --no-eff-email
       -d drummvibe.com -d www.drummvibe.com"
