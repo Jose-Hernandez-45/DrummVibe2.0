@@ -388,7 +388,9 @@ app.get('/clases', async (req, res) => {
     return res.status(500).json({ error: 'Error al obtener clases' });
   }
 });
-
+app.get('/ping', (req, res) => {
+  res.send('pong');
+});
 // Iniciar servidor
 app.listen(port, () => {
   console.log(`🚀 Servidor escuchando en http://localhost:${port}`);
